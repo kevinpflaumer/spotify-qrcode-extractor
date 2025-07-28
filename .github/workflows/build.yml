@@ -1,0 +1,39 @@
+name: Build EXE on Release Tag
+
+on:
+  push:
+    tags:
+      - "v*.*.*"  # Triggers only on version tags like v1.0.0
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v3
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: 📦 Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install spotipy click qrcode[pil] pyinstaller
+
+      - name: 🔧 Build EXE with PyInstaller
+        run: |
+          pyinstaller --onefile -n spotify-qrcode-extractor --icon assets/icon.ico main.py
+
+      - name: 📁 Zip EXE
+        run: |
+          Compress-Archive -Path dist/spotify-qrcode-extractor.exe -DestinationPath spotify-qrcode-extractor.zip
+
+      - name: 🚀 Upload Release Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: spotify-qrcode-extractor.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
