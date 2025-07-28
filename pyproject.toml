@@ -1,6 +1,6 @@
 [project]
 name = "spotify-qrcode-extractor"
-version = "1.0.0"
+version = "0.0.1"
 description = "A CLI (Command Line Interface) app which allows users to generate QR-Codes by providing a spotify playlist URL."
 requires-python = ">=3.11"
 dependencies = [
