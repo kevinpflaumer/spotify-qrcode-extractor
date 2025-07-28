@@ -1,5 +1,4 @@
-from spotipy.oauth2 import SpotifyOAuth
-from spotipy import Spotify, SpotifyException
+from spotipy import Spotify, SpotifyException, SpotifyClientCredentials
 from tomllib import load as tomllib_load
 from tomllib import TOMLDecodeError
 from re import sub
@@ -25,37 +24,36 @@ def main():
         print(f"❌ Error: Failed to parse 'config.toml': {e}")
         exit(1)
 
-    spotify_config = config["spotify"]
-    output_config = config["output"]
+    _SPOTIFY_CLIENT_ID = config["spotify"]["client_id"]
+    _SPOTIFY_CLIENT_SECRET = config["spotify"]["client_secret"]
+    _OUTPUT_FOLDER = config["output"]["folder"]
 
-    playlist_id = config.get("spotify", {}).get("playlist_id")
-
-    if not playlist_id:
-        playlist_id = input("Enter Spotify Playlist ID (format: 3rsWc7Z7Ai3cP3UfJNjhp4): ")
+    _PLAYLIST_ID = config.get("spotify", {}).get("playlist_id")
+    if not _PLAYLIST_ID:
+        _PLAYLIST_ID = input("Enter Spotify Playlist ID (format: 3rsWc7Z7Ai3cP3UfJNjhp4): ")
 
     # Creates spotify API instance
-    spotify = Spotify(auth_manager=SpotifyOAuth(
-        client_id=spotify_config["client_id"],
-        client_secret=spotify_config["client_secret"],
-        redirect_uri=spotify_config["redirect_url"])
-    )
+    spotify = Spotify(client_credentials_manager=SpotifyClientCredentials(
+        client_id=_SPOTIFY_CLIENT_ID,
+        client_secret=_SPOTIFY_CLIENT_SECRET,
+    ))
 
     # Fetch tracks from playlist
     try:
-        results = spotify.playlist_items(playlist_id)
+        results = spotify.playlist_items(_PLAYLIST_ID)
     except SpotifyException as e:
         results = {}
         if e.http_status == 400:
-            print(f"❌ Error: '{playlist_id}' is not a valid playlist ID.")
+            print(f"❌ Error: '{_PLAYLIST_ID}' is not a valid playlist ID.")
         elif e.http_status == 404:
-            print(f"❌ Error: Playlist with ID '{playlist_id}' not found.")
+            print(f"❌ Error: Playlist with ID '{_PLAYLIST_ID}' not found.")
         else:
             print(f"❌ Error: Uknown Spotify error: '{e}'")
         exit(1)
 
     # Creates output directory if it does not exist
-    if not path.exists(output_config["folder"]):
-        makedirs(output_config["folder"])
+    if not path.exists(_OUTPUT_FOLDER):
+        makedirs(_OUTPUT_FOLDER)
 
     # For each track, generate a qr code and save it
     for idx, item in enumerate(results['items']):
@@ -73,7 +71,7 @@ def main():
         # Saves the qr code to disk
         filename = f"{artist_names} - {track_name}.png"
         qr = qrcode_make(track_url)
-        qr.save(path.join(output_config["folder"], filename))
+        qr.save(path.join(_OUTPUT_FOLDER, filename))
 
     print("------ Successfully extracted all QR-Codes ------")
 
