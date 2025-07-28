@@ -1,0 +1,12 @@
+[spotify]
+# Spotify app settings
+client_id = "PUT_CLIENT_ID_HERE"
+client_secret = "PUT_CLIENT_SECRET_HERE"
+redirect_url = "PUT_REDIRECT_URL_HERE"
+
+# (Optional) Fixed playlist ID to use
+# playlist_id = "SPOTIFY_PLAYLIST_ID"
+
+[output]
+# name of the output folder
+folder = "output"

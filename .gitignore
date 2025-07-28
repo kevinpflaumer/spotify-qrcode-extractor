@@ -1,0 +1,9 @@
+.idea/
+.venv/
+build/
+dist/
+output/
+
+config.toml
+.cache
+*.spec
