@@ -29,11 +29,14 @@ jobs:
 
       - name: 📁 Zip EXE
         run: |
-          Compress-Archive -Path dist/spotify-qrcode-extractor.exe -DestinationPath spotify-qrcode-extractor.zip
+          $TAG_NAME = "${{ github.ref }}".Split("/")[-1]
+          $ZIP_NAME = "spotify-qrcode-extractor-$TAG_NAME.zip"
+          New-Item -ItemType Directory -Path release
+          Compress-Archive -Path dist/spotify-qrcode-extractor.exe -DestinationPath "release/$ZIP_NAME"
 
       - name: 🚀 Upload Release Asset
         uses: softprops/action-gh-release@v2
         with:
-          files: spotify-qrcode-extractor.zip
+          files: release/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
