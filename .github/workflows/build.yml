@@ -3,7 +3,7 @@ name: Build EXE on Release Tag
 on:
   push:
     tags:
-      - "v*.*.*"  # Triggers only on version tags like v1.0.0
+      - "*.*.*"  # Workflow only triggers on version tags like "1.0.0"
 
 jobs:
   build-windows:
