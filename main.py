@@ -7,10 +7,14 @@ from qrcode import make as qrcode_make
 from sys import exit
 
 CACHE_FILE = "appdata.cache"
+MAX_STRING_LENGTH = 100
 
 
-def remove_forbidden_characters(name):
-    return sub(r'[\\/*?:"<>|]', '_', name)
+def save_filename(name):
+    _resultName = sub(r'[\\/*?:"<>|]', '_', name)
+    if len(_resultName) > MAX_STRING_LENGTH:
+        _resultName = _resultName[:MAX_STRING_LENGTH]
+    return _resultName
 
 
 def load_cache():
@@ -28,7 +32,6 @@ def save_cache(data: dict):
 
 
 def get_playlist_songs(_spotify, _playlist):
-    # Fetch all playlist items (with pagination)
     results = []
     limit = 100
     offset = 0
@@ -44,6 +47,7 @@ def get_playlist_songs(_spotify, _playlist):
             break
         results.extend(items)
         offset += limit
+    click.echo(f"🌐 Retrieved '{len(results)}' songs from Spotify")
     return results
 
 
@@ -104,8 +108,8 @@ def cli(client_id, client_secret, playlist, cache, output, verbose):
         track = item["track"]
         track_url = track["external_urls"]["spotify"]
 
-        track_name = remove_forbidden_characters(track["name"])
-        artist_names = remove_forbidden_characters(
+        track_name = save_filename(track["name"])
+        artist_names = save_filename(
             ', '.join(artist["name"] for artist in track["artists"])
         )
 
