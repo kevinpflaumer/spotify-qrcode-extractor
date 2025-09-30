@@ -27,6 +27,26 @@ def save_cache(data: dict):
             f.write(f'{key} = "{value}"\n')
 
 
+def get_playlist_songs(_spotify, _playlist):
+    # Fetch all playlist items (with pagination)
+    results = []
+    limit = 100
+    offset = 0
+
+    while True:
+        response = _spotify.playlist_items(
+            _playlist,
+            limit=limit,
+            offset=offset
+        )
+        items = response.get("items", [])
+        if not items:
+            break
+        results.extend(items)
+        offset += limit
+    return results
+
+
 @click.command()
 @click.option("--client-id", "-i", help="Spotify Client ID")
 @click.option("--client-secret", "-s", help="Spotify Client Secret")
@@ -62,7 +82,7 @@ def cli(client_id, client_secret, playlist, cache, output, verbose):
 
     # Fetch playlist items
     try:
-        results = spotify.playlist_items(playlist)
+        results = get_playlist_songs(spotify, playlist)
     except SpotifyException as e:
         results = {}
         if e.http_status == 400:
@@ -80,7 +100,7 @@ def cli(client_id, client_secret, playlist, cache, output, verbose):
             click.secho(f"📁 Created output directory: {output}", fg="green")
 
     # Generate QR codes
-    for idx, item in enumerate(results["items"]):
+    for idx, item in enumerate(results):
         track = item["track"]
         track_url = track["external_urls"]["spotify"]
 
@@ -100,7 +120,7 @@ def cli(client_id, client_secret, playlist, cache, output, verbose):
 
     click.secho("🎉 All QR codes generated successfully!", fg="cyan")
 
-    # Save to appcache.toml if --cache is passed
+    # Save to "appdata.cache" if --cache is passed
     if cache:
         save_cache({
             "client_id": client_id,
